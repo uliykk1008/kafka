@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KAFKA ❤️</title>
+
+<title>KAFKA</title>
 
 <style>
 * {
@@ -18,9 +19,6 @@ body {
     height: 100%;
     overflow: hidden;
     background: #020006;
-}
-
-body {
     font-family: Arial, sans-serif;
 }
 
@@ -29,18 +27,118 @@ canvas {
     inset: 0;
 }
 
+
+/* ================================
+   TOMBOL AWAL
+================================ */
+
+.start {
+    position: fixed;
+    z-index: 20;
+
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    text-align: center;
+
+    cursor: pointer;
+
+    transition:
+        opacity 1s ease,
+        transform 1s ease;
+}
+
+.start.hide {
+    opacity: 0;
+    transform:
+        translate(-50%, -50%)
+        scale(1.8);
+
+    pointer-events: none;
+}
+
+.click-text {
+    color: white;
+
+    font-size: 16px;
+
+    letter-spacing: 5px;
+
+    margin-bottom: 18px;
+
+    text-shadow:
+        0 0 10px #ff8bdc,
+        0 0 25px #ff299f;
+}
+
+.heart-button {
+    width: 70px;
+    height: 70px;
+
+    margin: auto;
+
+    border-radius: 50%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: white;
+
+    font-size: 30px;
+
+    background:
+        radial-gradient(
+            circle,
+            #ff8bdc,
+            #ff1493,
+            #8b2cff
+        );
+
+    box-shadow:
+        0 0 15px #ff5bc7,
+        0 0 35px #ff1493,
+        0 0 70px #8b2cff;
+
+    animation:
+        buttonPulse 1.6s
+        infinite ease-in-out;
+}
+
+@keyframes buttonPulse {
+
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
+}
+
+
+/* ================================
+   KAFKA
+================================ */
+
 .name {
     position: fixed;
+
     z-index: 5;
 
     top: 50%;
     left: 50%;
 
-    transform: translate(-50%, -50%) scale(.7);
+    transform:
+        translate(-50%, -50%)
+        scale(.5);
 
     color: white;
 
-    font-size: clamp(45px, 15vw, 120px);
+    font-size:
+        clamp(45px, 15vw, 120px);
 
     font-weight: 700;
 
@@ -48,32 +146,41 @@ canvas {
 
     opacity: 0;
 
+    pointer-events: none;
+
     text-shadow:
         0 0 8px white,
         0 0 20px #ffb6df,
         0 0 45px #ff4db8,
         0 0 90px #ff1684;
-
-    animation:
-        appear 4s ease forwards,
-        breathe 3s ease-in-out infinite 4s;
-
-    pointer-events: none;
 }
 
-@keyframes appear {
+.name.show {
+    animation:
+        kafkaAppear 3s
+        cubic-bezier(.2,.8,.2,1)
+        forwards,
+        kafkaGlow 3s
+        ease-in-out
+        infinite
+        3s;
+}
+
+@keyframes kafkaAppear {
 
     0% {
         opacity: 0;
+
         transform:
             translate(-50%, -50%)
             scale(.2);
 
-        filter: blur(25px);
+        filter: blur(30px);
     }
 
     55% {
         opacity: 1;
+
         transform:
             translate(-50%, -50%)
             scale(1.12);
@@ -83,6 +190,7 @@ canvas {
 
     100% {
         opacity: 1;
+
         transform:
             translate(-50%, -50%)
             scale(1);
@@ -91,18 +199,22 @@ canvas {
     }
 }
 
-@keyframes breathe {
+@keyframes kafkaGlow {
 
     0%, 100% {
-        transform:
-            translate(-50%, -50%)
-            scale(1);
+        text-shadow:
+            0 0 8px white,
+            0 0 20px #ffb6df,
+            0 0 45px #ff4db8,
+            0 0 80px #ff1684;
     }
 
     50% {
-        transform:
-            translate(-50%, -50%)
-            scale(1.06);
+        text-shadow:
+            0 0 15px white,
+            0 0 35px #ffb6df,
+            0 0 70px #ff4db8,
+            0 0 120px #ff1684;
     }
 }
 </style>
@@ -112,9 +224,32 @@ canvas {
 
 <canvas id="canvas"></canvas>
 
-<div class="name">
+
+<!-- ================================
+     TOMBOL PEMBUKA
+================================ -->
+
+<div class="start" id="start">
+
+    <div class="click-text">
+        CLICK ME
+    </div>
+
+    <div class="heart-button">
+        ♡
+    </div>
+
+</div>
+
+
+<!-- ================================
+     NAMA
+================================ -->
+
+<div class="name" id="name">
     KAFKA
 </div>
+
 
 <script>
 
@@ -124,8 +259,24 @@ const canvas =
 const ctx =
     canvas.getContext("2d");
 
+const start =
+    document.getElementById("start");
+
+const name =
+    document.getElementById("name");
+
+
 let width;
 let height;
+
+let started = false;
+
+let startTime = 0;
+
+
+/* ================================
+   RESIZE
+================================ */
 
 function resize() {
 
@@ -146,13 +297,14 @@ window.addEventListener(
 );
 
 
-/* =====================================
+/* ================================
    PARTICLES
-===================================== */
+================================ */
 
 const particles = [];
 
 const particleCount = 1800;
+
 
 for (
     let i = 0;
@@ -195,17 +347,6 @@ for (
             2 +
             .4,
 
-        speed:
-            Math.random() *
-            .02 +
-            .005,
-
-        angle:
-            angle,
-
-        radius:
-            radius,
-
         phase:
             Math.random() *
             Math.PI *
@@ -219,11 +360,12 @@ for (
 }
 
 
-/* =====================================
+/* ================================
    STARS
-===================================== */
+================================ */
 
 const stars = [];
+
 
 for (
     let i = 0;
@@ -289,9 +431,9 @@ function drawStars(time) {
 }
 
 
-/* =====================================
-   MEMBUAT TARGET "KAFKA"
-===================================== */
+/* ================================
+   TARGET TEXT
+================================ */
 
 const textCanvas =
     document.createElement(
@@ -312,6 +454,7 @@ function createTargets() {
     textCanvas.height =
         height;
 
+
     textCtx.clearRect(
         0,
         0,
@@ -319,14 +462,17 @@ function createTargets() {
         height
     );
 
+
     const fontSize =
         Math.min(
             width * .20,
             150
         );
 
+
     textCtx.font =
         `bold ${fontSize}px Arial`;
+
 
     textCtx.textAlign =
         "center";
@@ -334,8 +480,10 @@ function createTargets() {
     textCtx.textBaseline =
         "middle";
 
+
     textCtx.fillStyle =
         "white";
+
 
     textCtx.fillText(
         "KAFKA",
@@ -379,8 +527,8 @@ function createTargets() {
             ) {
 
                 points.push({
-                    x: x,
-                    y: y
+                    x,
+                    y
                 });
             }
         }
@@ -410,14 +558,50 @@ function createTargets() {
 createTargets();
 
 
-/* =====================================
-   ANIMASI
-===================================== */
+/* ================================
+   CLICK
+================================ */
+
+start.addEventListener(
+    "Kafka COC",
+    () => {
+
+        if (started) return;
+
+        started = true;
+
+        startTime =
+            performance.now();
+
+        start.classList.add(
+            "hide"
+        );
+
+
+        /*
+          Setelah diklik,
+          KAFKA mulai muncul.
+        */
+
+        setTimeout(() => {
+
+            name.classList.add(
+                "show"
+            );
+
+        }, 1500);
+    }
+);
+
+
+/* ================================
+   ANIMATION
+================================ */
 
 function animate(time) {
 
     ctx.fillStyle =
-        "rgba(2,0,6,.18)";
+        "rgba(2,0,6,.16)";
 
     ctx.fillRect(
         0,
@@ -437,105 +621,107 @@ function animate(time) {
         height / 2;
 
 
-    /* ===============================
+    /* ================================
        ORBIT
-    =============================== */
+    ================================ */
 
-    for (
-        let i = 0;
-        i < 5;
-        i++
-    ) {
+    if (started) {
 
-        const radius =
-            Math.min(
-                width,
-                height
-            ) *
-            (.18 + i * .09);
+        for (
+            let i = 0;
+            i < 5;
+            i++
+        ) {
 
-
-        ctx.beginPath();
-
-        ctx.arc(
-            centerX,
-            centerY,
-            radius,
-            0,
-            Math.PI * 2
-        );
+            const radius =
+                Math.min(
+                    width,
+                    height
+                ) *
+                (.18 + i * .09);
 
 
-        ctx.strokeStyle =
-            `rgba(
-                255,
-                80,
-                180,
-                ${.04 + i * .01}
-            )`;
+            ctx.beginPath();
 
 
-        ctx.lineWidth =
-            1;
+            ctx.arc(
+                centerX,
+                centerY,
+                radius,
+                0,
+                Math.PI * 2
+            );
 
 
-        ctx.stroke();
+            ctx.strokeStyle =
+                `rgba(
+                    255,
+                    80,
+                    180,
+                    ${.04 + i * .01}
+                )`;
+
+
+            ctx.lineWidth = 1;
+
+
+            ctx.stroke();
+        }
     }
 
 
-    /* ===============================
+    /* ================================
        PARTICLES
-    =============================== */
+    ================================ */
 
     for (
         const particle of particles
     ) {
 
-        const attraction =
-            .008 +
-            (
+        if (started) {
+
+            const attraction =
+                .008 +
+                (
+                    Math.sin(
+                        time * .0007
+                    ) + 1
+                ) *
+                .012;
+
+
+            particle.x +=
+                (
+                    particle.targetX -
+                    particle.x
+                ) *
+                attraction;
+
+
+            particle.y +=
+                (
+                    particle.targetY -
+                    particle.y
+                ) *
+                attraction;
+
+
+            particle.x +=
                 Math.sin(
-                    time * .0007
-                ) + 1
-            ) *
-            .012;
+                    time * .001 +
+                    particle.phase
+                ) *
+                .35;
 
 
-        particle.x +=
-            (
-                particle.targetX -
-                particle.x
-            ) *
-            attraction;
+            particle.y +=
+                Math.cos(
+                    time * .0012 +
+                    particle.phase
+                ) *
+                .35;
+        }
 
-
-        particle.y +=
-            (
-                particle.targetY -
-                particle.y
-            ) *
-            attraction;
-
-
-        /* Gerakan lembut */
-
-        particle.x +=
-            Math.sin(
-                time * .001 +
-                particle.phase
-            ) *
-            .35;
-
-
-        particle.y +=
-            Math.cos(
-                time * .0012 +
-                particle.phase
-            ) *
-            .35;
-
-
-        /* Glow */
 
         ctx.beginPath();
 
@@ -558,9 +744,7 @@ function animate(time) {
             )`;
 
 
-        ctx.shadowBlur =
-            14;
-
+        ctx.shadowBlur = 14;
 
         ctx.shadowColor =
             "#ff4db8";
@@ -570,68 +754,71 @@ function animate(time) {
     }
 
 
-    /* ===============================
-       ORBITING LIGHT
-    =============================== */
+    /* ================================
+       ORBIT LIGHT
+    ================================ */
 
-    for (
-        let i = 0;
-        i < 8;
-        i++
-    ) {
+    if (started) {
 
-        const angle =
-            time * .0005 +
-            i *
-            Math.PI /
-            4;
+        for (
+            let i = 0;
+            i < 8;
+            i++
+        ) {
 
-
-        const radius =
-            Math.min(
-                width,
-                height
-            ) *
-            .35;
+            const angle =
+                time * .0005 +
+                i *
+                Math.PI /
+                4;
 
 
-        const x =
-            centerX +
-            Math.cos(angle) *
-            radius;
+            const radius =
+                Math.min(
+                    width,
+                    height
+                ) *
+                .35;
 
 
-        const y =
-            centerY +
-            Math.sin(angle) *
-            radius;
+            const x =
+                centerX +
+                Math.cos(angle) *
+                radius;
 
 
-        ctx.beginPath();
+            const y =
+                centerY +
+                Math.sin(angle) *
+                radius;
 
 
-        ctx.arc(
-            x,
-            y,
-            2.5,
-            0,
-            Math.PI * 2
-        );
+            ctx.beginPath();
 
 
-        ctx.fillStyle =
-            "#ffffff";
+            ctx.arc(
+                x,
+                y,
+                2.5,
+                0,
+                Math.PI * 2
+            );
 
 
-        ctx.shadowBlur =
-            25;
+            ctx.fillStyle =
+                "#ffffff";
 
 
-        ctx.shadowColor =
-            "#ff5bc7";
+            ctx.shadowBlur =
+                25;
 
 
-        ctx.fill();
+            ctx.shadowColor =
+                "#ff5bc7";
+
+
+            ctx.fill();
+        }
     }
 
 
@@ -639,6 +826,7 @@ function animate(time) {
         animate
     );
 }
+
 
 animate(0);
 
